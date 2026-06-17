@@ -1,20 +1,25 @@
-# This is a 
-FROM gcc:16
+# This is a LAMMPS container
+FROM ubuntu:latest
 
-RUN apt update && apt-get install git 
+RUN apt update && apt-get install -y git  
 
-WORKDIR app/
+WORKDIR /app
 
 RUN git clone https://github.com/lammps/lammps.git lammpscode
-RUN cd lammpscode/src && git checkout stable_29Oct2020
 
-RUN apt-get install g++
+WORKDIR /app/lammpscode/src
 
-RUN	cd lammpscode/src && make yes-KSPACE
-RUN cd lammpscode/src && make clean-ubuntu
-RUN cd /app/lammpscode/src && make -j 1 ubuntu
+RUN git checkout stable
 
-RUN ln -s /app/lammpscode/src/lmp_ubuntu /app/lmp
+RUN apt-get install -y gcc g++ mpi-default-bin mpi-default-dev libfftw3-dev libjpeg-dev libpng-dev make
+
+RUN make -j 1 ubuntu
+
+RUN mv /app/lammpscode/src/lmp_ubuntu /app/lmp
+
+RUN make clean-all
+
+WORKDIR /app
 
 ENTRYPOINT [ "./lmp" ]
-#CMD ["/usr/bin/bash"] 
+
